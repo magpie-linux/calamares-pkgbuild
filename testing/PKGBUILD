@@ -2,8 +2,8 @@
 # Contributor: Rizwan Hasan <rizwan.hasan486@gmail.com>
 
 pkgname=calamares
+_pkgname='calamares-installer-master'
 pkgver=3.2.12
-_pkgver=3.2.12
 pkgrel=1
 pkgdesc='Distribution-independent installer framework'
 arch=('x86_64')
@@ -19,21 +19,20 @@ makedepends=('extra-cmake-modules' 'qt5-tools' 'qt5-translations' 'git' 'boost')
 #          'usr/share/calamares/modules/initcpio.conf'
 #          'usr/share/calamares/modules/unpackfs.conf')
 
-source+=("$pkgname-$pkgver.tar.gz")
+# source+=("$pkgname-$pkgver.tar.gz"::"https://github.com/magpie-linux/calamares-installer/archive/master.tar.gz")
+source+=("$pkgname-$pkgver.tar.xz")
 md5sums=('SKIP')
 
 prepare() {
-	cd ${srcdir}/calamares-${_pkgver}
+	mv -vf ${_pkgname} ${srcdir}/calamares-${pkgver}
+	cd ${srcdir}/calamares-${pkgver}
 	sed -i -e 's/"Install configuration files" OFF/"Install configuration files" ON/' CMakeLists.txt
-	# patches here
-
-	# add revision
 	_patchver="$(cat CMakeLists.txt | grep -m3 -e CALAMARES_VERSION_PATCH | grep -o "[[:digit:]]*" | xargs)"
 	sed -i -e "s|CALAMARES_VERSION_PATCH $_patchver|CALAMARES_VERSION_PATCH $_patchver-$pkgrel|g" CMakeLists.txt
 }
 
 build() {
-	cd ${srcdir}/calamares-${_pkgver}
+	cd ${srcdir}/calamares-${pkgver}
 
 	mkdir -p build
 	cd build
@@ -46,11 +45,13 @@ build() {
                               initramfscfg dracut dracutlukscfg \
                               dummyprocess dummypython dummycpp \
                               dummypythonqt services-openrc"
-        make
+        # make
+        NB_CORES=$(grep -c '^processor' /proc/cpuinfo)
+		make -j$((NB_CORES+1)) -l${NB_CORES}
 }
 
 package() {
-	cd ${srcdir}/calamares-${_pkgver}/build
+	cd ${srcdir}/calamares-${pkgver}/build
 	make DESTDIR="$pkgdir" install
 
 	# rename services-systemd back to services

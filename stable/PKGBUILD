@@ -2,8 +2,8 @@
 # Contributor: Rizwan Hasan <rizwan.hasan486@gmail.com>
 
 pkgname=calamares
-pkgver=3.2.7.1
-_pkgver=3.2.7.1
+_pkgname='calamares-installer-master'
+pkgver=3.2.12
 pkgrel=1
 pkgdesc='Distribution-independent installer framework'
 arch=('x86_64')
@@ -14,29 +14,24 @@ depends=('kconfig' 'kcoreaddons' 'kiconthemes' 'ki18n' 'kio' 'solid' 'yaml-cpp' 
          'boost-libs' 'ckbcomp' 'hwinfo' 'qt5-svg' 'polkit-qt5' 'gtk-update-icon-cache' 'pythonqt>=3.2' 'plasma-framework'
          'qt5-xmlpatterns')
 makedepends=('extra-cmake-modules' 'qt5-tools' 'qt5-translations' 'git' 'boost')
-backup=('usr/share/calamares/modules/bootloader.conf'
-        'usr/share/calamares/modules/displaymanager.conf'
-        'usr/share/calamares/modules/initcpio.conf'
-        'usr/share/calamares/modules/unpackfs.conf')
+# backup=('usr/share/calamares/modules/bootloader.conf'
+#          'usr/share/calamares/modules/displaymanager.conf'
+#          'usr/share/calamares/modules/initcpio.conf'
+#          'usr/share/calamares/modules/unpackfs.conf')
 
-source+=("$pkgname-$pkgver-$pkgrel.tar.xz")
-md5sums=('SKIP')
+source+=("$pkgname-$pkgver.tar.gz"::"https://github.com/magpie-linux/calamares-installer/archive/master.tar.gz")
+md5sums=('93baf14a88c8ff1809026f67ee3a65f0')
 
 prepare() {
-	mv ${srcdir}/calamares-3.2.x-stable ${srcdir}/calamares-${_pkgver}
-	#mv ${srcdir}/calamares-v${pkgver} ${srcdir}/calamares-${_pkgver}
-	cd ${srcdir}/calamares-${_pkgver}
+	mv -vf ${_pkgname} ${srcdir}/calamares-${pkgver}
+	cd ${srcdir}/calamares-${pkgver}
 	sed -i -e 's/"Install configuration files" OFF/"Install configuration files" ON/' CMakeLists.txt
-
-	# patches here
-
-	# add revision
 	_patchver="$(cat CMakeLists.txt | grep -m3 -e CALAMARES_VERSION_PATCH | grep -o "[[:digit:]]*" | xargs)"
 	sed -i -e "s|CALAMARES_VERSION_PATCH $_patchver|CALAMARES_VERSION_PATCH $_patchver-$pkgrel|g" CMakeLists.txt
 }
 
 build() {
-	cd ${srcdir}/calamares-${_pkgver}
+	cd ${srcdir}/calamares-${pkgver}
 
 	mkdir -p build
 	cd build
@@ -49,18 +44,14 @@ build() {
                               initramfscfg dracut dracutlukscfg \
                               dummyprocess dummypython dummycpp \
                               dummypythonqt services-openrc"
-        make
+        # make
+        NB_CORES=$(grep -c '^processor' /proc/cpuinfo)
+		make -j$((NB_CORES+1)) -l${NB_CORES}
 }
 
 package() {
-	cd ${srcdir}/calamares-${_pkgver}/build
+	cd ${srcdir}/calamares-${pkgver}/build
 	make DESTDIR="$pkgdir" install
-	
-	# install -Dm644 "../data/manjaro-icon.svg" "$pkgdir/usr/share/icons/hicolor/scalable/apps/calamares.svg"
-	# install -Dm644 "../data/calamares.desktop" "$pkgdir/usr/share/applications/calamares.desktop"
-	# install -Dm755 "../data/calamares_polkit" "$pkgdir/usr/bin/calamares_polkit"
-	# install -Dm644 "../data/49-nopasswd-calamares.rules" "$pkgdir/etc/polkit-1/rules.d/49-nopasswd-calamares.rules"
-	# chmod 750      "$pkgdir"/etc/polkit-1/rules.d
 
 	# rename services-systemd back to services
 	mv "$pkgdir/usr/lib/calamares/modules/services-systemd" "$pkgdir/usr/lib/calamares/modules/services"
