@@ -2,8 +2,8 @@
 # Contributor: Rizwan Hasan <rizwan.hasan486@gmail.com>
 
 pkgname=calamares
-_pkgname='calamares-installer-master'
 pkgver=3.2.12
+branch=testing
 pkgrel=1
 pkgdesc='Distribution-independent installer framework'
 arch=('x86_64')
@@ -14,16 +14,16 @@ depends=('kconfig' 'kcoreaddons' 'kiconthemes' 'ki18n' 'kio' 'solid' 'yaml-cpp' 
          'boost-libs' 'ckbcomp' 'hwinfo' 'qt5-svg' 'polkit-qt5' 'gtk-update-icon-cache' 'pythonqt>=3.2' 'plasma-framework'
          'qt5-xmlpatterns')
 makedepends=('extra-cmake-modules' 'qt5-tools' 'qt5-translations' 'git' 'boost')
-backup=('usr/share/calamares/modules/bootloader.conf'
-         'usr/share/calamares/modules/displaymanager.conf'
-         'usr/share/calamares/modules/initcpio.conf'
-         'usr/share/calamares/modules/unpackfs.conf')
+# backup=('usr/share/calamares/modules/bootloader.conf'
+#          'usr/share/calamares/modules/displaymanager.conf'
+#          'usr/share/calamares/modules/initcpio.conf'
+#          'usr/share/calamares/modules/unpackfs.conf')
 
-source+=("$pkgname-$pkgver.tar.gz"::"https://github.com/magpie-linux/calamares-installer/archive/master.tar.gz")
+source+=("https://github.com/magpie-linux/calamares-installer/archive/${branch}.tar.gz")
 md5sums=('SKIP')
 
 prepare() {
-	mv -vf ${_pkgname} ${srcdir}/calamares-${pkgver}
+	mv -vf ${pkgname}-installer-${branch} ${srcdir}/calamares-${pkgver}
 	cd ${srcdir}/calamares-${pkgver}
 	sed -i -e 's/"Install configuration files" OFF/"Install configuration files" ON/' CMakeLists.txt
 	_patchver="$(cat CMakeLists.txt | grep -m3 -e CALAMARES_VERSION_PATCH | grep -o "[[:digit:]]*" | xargs)"
