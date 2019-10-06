@@ -2,7 +2,7 @@
 # Contributor: Rizwan Hasan <rizwan.hasan486@gmail.com>
 
 pkgname=calamares
-pkgver=3.2.12
+pkgver=3.2.14
 branch=testing
 pkgrel=2
 pkgdesc='Distribution-independent installer framework'
